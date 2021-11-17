@@ -3,10 +3,21 @@ package Graphs;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+/**
+ * Data structure to create, manipulate and represent graphs.
+ *
+ * @param <E> type of item to store in the graph's vertices.
+ */
 public class Graph<E> extends AbstractPrimitiveGraph<E> {
 
+    /**
+     * ArrayList where we store all the edges of the graph.
+     */
     ArrayList<PrimitiveEdge<E>> edges;
 
+    /**
+     * Constructs an empty Graph
+     */
     public Graph() {
         this.edges = new ArrayList<>();
         this.vertices = new ArrayList<>();
@@ -15,10 +26,18 @@ public class Graph<E> extends AbstractPrimitiveGraph<E> {
     @Override
     public boolean addItem(E item) {
         var vertex = new Vertex(item);
-        if (vertices.contains(vertex))
-            return false;
+        if (vertices.contains(vertex)) return false;
         vertices.add(new Vertex(item));
         return true;
+    }
+
+    @Override
+    public PrimitiveVertex<E> getVertex(E item) {
+        for (PrimitiveVertex<E> v : vertices) {
+            if (vertices.contains(v))
+                return v;
+        }
+        return null;
     }
 
     @Override
@@ -31,9 +50,7 @@ public class Graph<E> extends AbstractPrimitiveGraph<E> {
         return new int[0][];
     }
 
-    @Override
     public int getMeasure() {
-
         return edges.size();
     }
 
@@ -42,9 +59,20 @@ public class Graph<E> extends AbstractPrimitiveGraph<E> {
         return edges;
     }
 
+    /**
+     * Private class that represent graph's vertices.
+     */
     private class Vertex extends PrimitiveVertex<E> {
+        /**
+         * Vertex degree (number of connections).
+         */
         int degree;
 
+        /**
+         * Constructs a vertex with an item in it.
+         *
+         * @param item item to store in the vertex.
+         */
         public Vertex(E item) {
             super(item);
         }
@@ -99,12 +127,21 @@ public class Graph<E> extends AbstractPrimitiveGraph<E> {
             if (o == null || getClass() != o.getClass()) return false;
 
             Vertex v = (Vertex) o;
-            return degree == v.degree && item.equals(v.item);
+            return item.equals(v.item);
         }
     }
 
+    /**
+     * Private class that represents graph's edges.
+     */
     private class Edge extends PrimitiveEdge<E> {
 
+        /**
+         * Constructs an edge.
+         *
+         * @param v1 one of the vertex it's connected to.
+         * @param v2 the other vertex it's connected to.
+         */
         Edge(PrimitiveVertex<E> v1, PrimitiveVertex<E> v2) {
             super(v1, v2);
         }
