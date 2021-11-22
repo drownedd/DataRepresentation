@@ -1,68 +1,101 @@
 package Graphs;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * Data structure to create, manipulate and represent graphs.
  *
  * @param <E> type of item to store in the graph's vertices.
  */
-public class Graph<E> extends AbstractPrimitiveGraph<E> {
-
-    /**
-     * ArrayList where we store all the edges of the graph.
-     */
-    ArrayList<PrimitiveEdge<E>> edges;
+public class Graph<E> extends AbstractCommonGraphs implements RepresentableGraph {
 
     /**
      * Constructs an empty Graph
      */
+    ArrayList<Vertex<E>> vertices;
+    /**
+     * ArrayList where we store all the edges of the graph.
+     */
+    ArrayList<GraphEdge<E>> edges;
+
     public Graph() {
-        this.edges = new ArrayList<>();
         this.vertices = new ArrayList<>();
+        this.edges = new ArrayList<>();
     }
 
-    @Override
+    /**
+     * Adds a vertex to the vertices list.
+     *
+     * @param item item to store in the vertex.
+     * @return {@code true} if and only if the vertex insertion was successful,
+     * {@code false} if the insertion failed due to the vertex already existing in the graph.
+     */
     public boolean addItem(E item) {
-        var vertex = new Vertex(item);
-        if (vertices.contains(vertex)) return false;
-        vertices.add(new Vertex(item));
+        Vertex<E> v = new Vertex<>(item);
+        if (this.containsVertex(v)) return false;
+        vertices.add(v);
         return true;
     }
 
-    @Override
-    public PrimitiveVertex<E> getVertex(E item) {
-        for (PrimitiveVertex<E> v : vertices) {
-            if (vertices.contains(v))
-                return v;
-        }
-        return null;
+    public Vertex<E> getVertex(Object o) {
+        return vertices.get(vertices.indexOf(new Vertex<>(o)));
     }
 
     @Override
-    public int[][] adjMatrix() {
-        return new int[0][];
+    public String getVerticesString() {
+        var result = "";
+        for (Vertex<E> item : vertices)
+            result += "[" + item.toString() + "]";
+        return result;
     }
 
     @Override
-    public int[][] incMatrix() {
-        return new int[0][];
+    public String getEdgesString() {
+        var result = "";
+        for (GraphEdge<E> e : edges)
+            result += "[" + e.v1.toString() + "+" + e.v2.toString() + "]";
+        return result;
     }
 
+    @Override
+    public int getOrder() {
+        return vertices.size();
+    }
+
+    @Override
     public int getMeasure() {
         return edges.size();
     }
 
     @Override
-    public ArrayList<PrimitiveEdge<E>> getEdges() {
-        return edges;
+    public boolean[][] adjacentMatrix() {
+        return new boolean[0][];
+    }
+
+    @Override
+    public boolean[][] incidentMatrix() {
+        return new boolean[0][];
+    }
+
+    @SuppressWarnings("unchecked")
+    public boolean containsVertex(Object o) {
+        if (o == null || o.getClass() != Vertex.class) return false;
+        Vertex<E> v = (Vertex<E>) o;
+        return vertices.contains(v);
+    }
+
+    @SuppressWarnings("unchecked")
+    public boolean containsEdge(Object e) {
+        if (e == null || e.getClass() != GraphEdge.class) return false;
+        GraphEdge<E> edge = (GraphEdge<E>) e;
+        return edges.contains(edge) || edges.contains(edge.reverse());
     }
 
     /**
      * Private class that represent graph's vertices.
      */
-    private class Vertex extends PrimitiveVertex<E> {
+    public static class Vertex<E> extends AbstractGraphVertex<E> {
         /**
          * Vertex degree (number of connections).
          */
@@ -73,46 +106,38 @@ public class Graph<E> extends AbstractPrimitiveGraph<E> {
          *
          * @param item item to store in the vertex.
          */
-        public Vertex(E item) {
+        Vertex(E item) {
             super(item);
         }
 
         @Override
-        public void addConnection() {
-            degree += 1;
-        }
-
-        @Override
-        public void removeConnection() {
-            if (degree <= 0)
-                throw new IllegalStateException("Vertex didn't have any connection.");
-            degree -= 1;
-        }
-
-        @Override
-        public int getDegree(PrimitiveVertex<E> vertex) {
+        public int getDegree() {
             return degree;
         }
 
-        @Override
-        public boolean connect(PrimitiveVertex<E> vertex) {
-            Edge edge = new Edge(this, vertex);
-            if (!vertices.contains(vertex) || edge.isContained())
-                return false;
-            vertex.addConnection();
-            addConnection();
-            edges.add(edge);
+        void increaseDegree() {
+            degree += 1;
+        }
+
+        boolean decreaseDegree() {
+            if (degree <= 0) return false;
+            degree--;
             return true;
         }
 
         @Override
-        public boolean disconnect(PrimitiveVertex<E> vertex) {
-            Edge edge = new Edge(this, vertex);
-            if (!(edges.contains(edge) || edges.contains(edge.reverse()))) return false;
-            vertices.remove(vertex);
-            if (!edges.remove(edge))
-                edges.remove(edge.reverse());
+        public boolean connectTo(Graph<E> graph, Graphs.Vertex<E> v) {
+            GraphEdge<E> edge = new GraphEdge<E>(this, (Vertex<E>) v);
+            if (graph.containsEdge(edge) || !graph.containsVertex(v))
+                return false;
+            graph.edges.add(edge);
             return true;
+        }
+
+        @Override
+        public boolean disconnectFrom(Graph<E> graph, Graphs.Vertex<E> v) {
+            GraphEdge<E> edge = new GraphEdge<E>(this, (Vertex<E>) v);
+            return graph.edges.remove(edge);
         }
 
         @Override
@@ -126,56 +151,35 @@ public class Graph<E> extends AbstractPrimitiveGraph<E> {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
 
-            Vertex v = (Vertex) o;
-            return item.equals(v.item);
+            Vertex<E> v = (Vertex<E>) o;
+            return Objects.equals(item, v.item);
         }
     }
 
-    /**
-     * Private class that represents graph's edges.
-     */
-    private class Edge extends PrimitiveEdge<E> {
+    protected static class GraphEdge<E> implements Edge {
+        public Vertex<E> v1;
+        public Vertex<E> v2;
 
-        /**
-         * Constructs an edge.
-         *
-         * @param v1 one of the vertex it's connected to.
-         * @param v2 the other vertex it's connected to.
-         */
-        Edge(PrimitiveVertex<E> v1, PrimitiveVertex<E> v2) {
-            super(v1, v2);
-        }
-
-        @SuppressWarnings("unchecked")
-        private Edge reverse() {
-            return new Edge((Vertex) connections[1], (Vertex) connections[0]);
+        protected GraphEdge(Vertex<E> v1, Vertex<E> v2) {
+            this.v1 = v1;
+            this.v2 = v2;
         }
 
         @Override
-        public boolean isContained() {
-            return edges.contains(this) || edges.contains(reverse());
+        public GraphEdge<E> reverse() {
+            return new GraphEdge<>(v2, v1);
         }
 
         @Override
-        @SuppressWarnings("unchecked")
-        public void removeEdge() {
-            for (Object o : connections) {
-                var v = (PrimitiveVertex<E>) o;
-                v.removeConnection();
-            }
-            edges.remove(this);
+        public void remove() {
+            v1.decreaseDegree();
+            v1 = null;
+            v2.decreaseDegree();
+            v2 = null;
         }
 
-        @Override
-        @SuppressWarnings("unchecked")
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || this.getClass() != o.getClass()) return false;
-
-            Edge edge = (Edge) o;
-
-            return Arrays.equals(this.connections, edge.connections) ||
-                    Arrays.equals(reverseConnections(), edge.connections);
+        public boolean isContainedIn(Graph<E> graph) {
+            return graph.containsEdge(this);
         }
     }
 }
