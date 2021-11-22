@@ -2,6 +2,6 @@ package Graphs;
 
 public interface RepresentableGraph {
 
-    boolean[][] adjacenceMatrix();
+    boolean[][] adjacencyMatrix();
     boolean[][] incidenceMatrix();
 }

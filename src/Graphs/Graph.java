@@ -65,7 +65,7 @@ public class Graph<E> extends AbstractCommonGraphs implements RepresentableGraph
     }
 
     @Override
-    public boolean[][] adjacenceMatrix() {
+    public boolean[][] adjacencyMatrix() {
         var return_ = new boolean[vertices.size()][vertices.size()];
         for (int i = 0; i < vertices.size(); i++) {
             for (int j = 0; j < vertices.size(); j++) {
@@ -100,7 +100,7 @@ public class Graph<E> extends AbstractCommonGraphs implements RepresentableGraph
     public boolean disconnect(E o1, E o2) {
         Vertex<E> v1 = new Vertex<>(o1);
         Vertex<E> v2 = new Vertex<>(o2);
-        GraphEdge<E> edge = new GraphEdge<E>(v1, v2);
+        GraphEdge<E> edge = new GraphEdge<>(v1, v2);
         boolean hasRemoved = edges.remove(edge);
         if (hasRemoved) {
             v1.decreaseDegree();
