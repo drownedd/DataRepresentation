@@ -40,18 +40,18 @@ public class Graph<E> extends AbstractCommonGraphs implements RepresentableGraph
 
     @Override
     public String getVerticesString() {
-        var result = "";
+        StringBuilder result = new StringBuilder();
         for (Vertex<E> item : vertices)
-            result += "[" + item.toString() + "]";
-        return result;
+            result.append("[").append(item.toString()).append("]");
+        return result.toString();
     }
 
     @Override
     public String getEdgesString() {
-        var result = "";
+        StringBuilder result = new StringBuilder();
         for (GraphEdge<E> e : edges)
-            result += "[" + e + "]";
-        return result;
+            result.append("[").append(e).append("]");
+        return result.toString();
     }
 
     @Override
