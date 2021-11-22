@@ -54,7 +54,7 @@ public class Graph<E> extends AbstractCommonGraphs implements RepresentableGraph
     public String getEdgesString() {
         var result = "";
         for (GraphEdge<E> e : edges)
-            result += "[" + e.v1.toString() + "+" + e.v2.toString() + "]";
+            result += "[" + e + "]";
         return result;
     }
 
@@ -69,12 +69,18 @@ public class Graph<E> extends AbstractCommonGraphs implements RepresentableGraph
     }
 
     @Override
-    public boolean[][] adjacentMatrix() {
-        return new boolean[0][];
+    public boolean[][] adjacenceMatrix() {
+        var return_ = new boolean[vertices.size()][vertices.size()];
+        for (int i = 0; i < vertices.size(); i++) {
+            for (int j = 0; j < vertices.size(); j++) {
+                return_[i][j] = containsEdge(new GraphEdge<>(vertices.get(i), vertices.get(j)));
+            }
+        }
+        return return_;
     }
 
     @Override
-    public boolean[][] incidentMatrix() {
+    public boolean[][] incidenceMatrix() {
         return new boolean[0][];
     }
 
@@ -178,8 +184,19 @@ public class Graph<E> extends AbstractCommonGraphs implements RepresentableGraph
             v2 = null;
         }
 
-        public boolean isContainedIn(Graph<E> graph) {
-            return graph.containsEdge(this);
+        @Override
+        @SuppressWarnings("unchecked")
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || o.getClass() != getClass()) return false;
+
+            GraphEdge<E> e = (GraphEdge<E>) o;
+            return v1.equals(e.v1) && v2.equals(e.v2);
+        }
+
+        @Override
+        public String toString() {
+            return v1.toString() + " - " + v2.toString();
         }
     }
 }
