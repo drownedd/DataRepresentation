@@ -4,18 +4,17 @@ public class Tests {
 
     public static void main(String[] args) {
         Graph<Integer> g = new Graph<>();
-        g.addItem(1);
-        g.addItem(2);
-        var v1 = g.getVertex(1);
-        var v2 = g.getVertex(2);
-        v1.connectTo(g, v2);
-        System.out.println(g.getEdgesString());
-        boolean[][] adjMat = g.adjacenceMatrix();
-        for (int i = 0; i < adjMat.length; i++) {
-            for (int j = 0; j < adjMat[0].length; j++) {
-                System.out.print(adjMat[i][j] + " ");
-            }
-            System.out.println();
-        }
+        g.addVertex(1);
+        g.addVertex(2);
+        g.addVertex(3);
+        g.addVertex(4);
+        g.connect(1, 2);
+        g.connect(1, 3);
+        g.connect(2, 4);
+        g.disconnect(2, 3);
+        ArrayPrints.printArray(g.adjacenceMatrix());
+        ArrayPrints.printArray(g.incidenceMatrix());
+        System.out.println("Order: \t\t" + g.getOrder());
+        System.out.println("Measure: \t" + g.getMeasure());
     }
 }

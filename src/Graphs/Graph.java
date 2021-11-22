@@ -31,15 +31,11 @@ public class Graph<E> extends AbstractCommonGraphs implements RepresentableGraph
      * @return {@code true} if and only if the vertex insertion was successful,
      * {@code false} if the insertion failed due to the vertex already existing in the graph.
      */
-    public boolean addItem(E item) {
+    public boolean addVertex(E item) {
         Vertex<E> v = new Vertex<>(item);
         if (this.containsVertex(v)) return false;
         vertices.add(v);
         return true;
-    }
-
-    public Vertex<E> getVertex(Object o) {
-        return vertices.get(vertices.indexOf(new Vertex<>(o)));
     }
 
     @Override
@@ -81,13 +77,48 @@ public class Graph<E> extends AbstractCommonGraphs implements RepresentableGraph
 
     @Override
     public boolean[][] incidenceMatrix() {
-        return new boolean[0][];
+        var return_ = new boolean[vertices.size()][edges.size()];
+        for (int i = 0; i < vertices.size(); i++) {
+            for (int j = 0; j < edges.size(); j++) {
+                return_[i][j] = edges.get(j).v1.equals(vertices.get(i)) || edges.get(j).v2.equals(vertices.get(i));
+            }
+        }
+        return return_;
+    }
+
+    public boolean connect(E o1, E o2) {
+        Vertex<E> v1 = new Vertex<>(o1);
+        Vertex<E> v2 = new Vertex<>(o2);
+        GraphEdge<E> edge = new GraphEdge<>(v1, v2);
+        if (!containsVertex(v1) || !containsVertex(v2) || containsEdge(edge)) return false;
+        edges.add(edge);
+        v1.increaseDegree();
+        v2.increaseDegree();
+        return true;
+    }
+
+    public boolean disconnect(E o1, E o2) {
+        Vertex<E> v1 = new Vertex<>(o1);
+        Vertex<E> v2 = new Vertex<>(o2);
+        GraphEdge<E> edge = new GraphEdge<E>(v1, v2);
+        boolean hasRemoved = edges.remove(edge);
+        if (hasRemoved) {
+            v1.decreaseDegree();
+            v2.decreaseDegree();
+        }
+        return hasRemoved;
     }
 
     @SuppressWarnings("unchecked")
     public boolean containsVertex(Object o) {
-        if (o == null || o.getClass() != Vertex.class) return false;
-        Vertex<E> v = (Vertex<E>) o;
+        if (o == null || !(o.getClass() == Vertex.class || o.getClass() == vertices.get(0).item.getClass())) {
+            return false;
+        }
+        Vertex<E> v;
+        if (o.getClass() == Vertex.class) {
+            v = (Vertex<E>) o;
+        } else
+            v = new Vertex<>((E) o);
         return vertices.contains(v);
     }
 
@@ -129,21 +160,6 @@ public class Graph<E> extends AbstractCommonGraphs implements RepresentableGraph
             if (degree <= 0) return false;
             degree--;
             return true;
-        }
-
-        @Override
-        public boolean connectTo(Graph<E> graph, Graphs.Vertex<E> v) {
-            GraphEdge<E> edge = new GraphEdge<E>(this, (Vertex<E>) v);
-            if (graph.containsEdge(edge) || !graph.containsVertex(v))
-                return false;
-            graph.edges.add(edge);
-            return true;
-        }
-
-        @Override
-        public boolean disconnectFrom(Graph<E> graph, Graphs.Vertex<E> v) {
-            GraphEdge<E> edge = new GraphEdge<E>(this, (Vertex<E>) v);
-            return graph.edges.remove(edge);
         }
 
         @Override
