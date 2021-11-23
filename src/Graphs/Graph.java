@@ -8,17 +8,17 @@ import java.util.Objects;
  *
  * @param <E> type of item to store in the graph's vertices.
  */
-public class Graph<E> extends AbstractCommonGraphs implements RepresentableGraph {
+public class Graph<E> extends AbstractCommonGraphs<E> implements RepresentableGraph {
 
-    /**
-     * Constructs an empty Graph
-     */
     ArrayList<Vertex<E>> vertices;
     /**
      * ArrayList where we store all the edges of the graph.
      */
     ArrayList<GraphEdge<E>> edges;
 
+    /**
+     * Constructs an empty Graph
+     */
     public Graph() {
         this.vertices = new ArrayList<>();
         this.edges = new ArrayList<>();
@@ -31,10 +31,10 @@ public class Graph<E> extends AbstractCommonGraphs implements RepresentableGraph
      * @return {@code true} if and only if the vertex insertion was successful,
      * {@code false} if the insertion failed due to the vertex already existing in the graph.
      */
+    @Override
     public boolean addVertex(E item) {
-        Vertex<E> v = new Vertex<>(item);
-        if (this.containsVertex(v)) return false;
-        vertices.add(v);
+        if (containsVertex(item)) return false;
+        vertices.add(new Vertex<>(item));
         return true;
     }
 
@@ -64,18 +64,22 @@ public class Graph<E> extends AbstractCommonGraphs implements RepresentableGraph
         return edges.size();
     }
 
+    @SuppressWarnings("ConstantConditions")
+    public int getVertexDegree(E item) {
+        return searchVertex(item).degree;
+    }
+
     @Override
     public boolean[][] adjacencyMatrix() {
         var return_ = new boolean[vertices.size()][vertices.size()];
         for (int i = 0; i < vertices.size(); i++) {
             for (int j = 0; j < vertices.size(); j++) {
-                return_[i][j] = containsEdge(new GraphEdge<>(vertices.get(i), vertices.get(j)));
+                return_[i][j] = containsEdge(vertices.get(i).item, vertices.get(j).item);
             }
         }
         return return_;
     }
 
-    @Override
     public boolean[][] incidenceMatrix() {
         var return_ = new boolean[vertices.size()][edges.size()];
         for (int i = 0; i < vertices.size(); i++) {
@@ -86,47 +90,50 @@ public class Graph<E> extends AbstractCommonGraphs implements RepresentableGraph
         return return_;
     }
 
+    @SuppressWarnings("ConstantConditions")
     public boolean connect(E o1, E o2) {
-        Vertex<E> v1 = new Vertex<>(o1);
-        Vertex<E> v2 = new Vertex<>(o2);
-        GraphEdge<E> edge = new GraphEdge<>(v1, v2);
-        if (!containsVertex(v1) || !containsVertex(v2) || containsEdge(edge)) return false;
-        edges.add(edge);
+        if (o1.equals(o2) || !containsVertex(o1) || !containsVertex(o2) || containsEdge(o1, o2)) return false;
+        Vertex<E> v1 = searchVertex(o1);
+        Vertex<E> v2 = searchVertex(o2);
+        edges.add(new GraphEdge<>(v1, v2));
         v1.increaseDegree();
         v2.increaseDegree();
         return true;
     }
 
+    @SuppressWarnings("ConstantConditions")
     public boolean disconnect(E o1, E o2) {
-        Vertex<E> v1 = new Vertex<>(o1);
-        Vertex<E> v2 = new Vertex<>(o2);
+        Vertex<E> v1 = searchVertex(o1);
+        Vertex<E> v2 = searchVertex(o2);
         GraphEdge<E> edge = new GraphEdge<>(v1, v2);
-        boolean hasRemoved = edges.remove(edge);
-        if (hasRemoved) {
+        if (edges.remove(edge)) {
             v1.decreaseDegree();
             v2.decreaseDegree();
+            return true;
         }
-        return hasRemoved;
+        return false;
     }
 
-    @SuppressWarnings("unchecked")
-    public boolean containsVertex(Object o) {
-        if (o == null || !(o.getClass() == Vertex.class || o.getClass() == vertices.get(0).item.getClass())) {
+    public boolean containsVertex(E o) {
+        if (o == null) {
             return false;
         }
-        Vertex<E> v;
-        if (o.getClass() == Vertex.class) {
-            v = (Vertex<E>) o;
-        } else
-            v = new Vertex<>((E) o);
-        return vertices.contains(v);
+        return vertices.contains(new Vertex<>(o));
     }
 
-    @SuppressWarnings("unchecked")
-    public boolean containsEdge(Object e) {
-        if (e == null || e.getClass() != GraphEdge.class) return false;
-        GraphEdge<E> edge = (GraphEdge<E>) e;
+    public boolean containsEdge(E e1, E e2) {
+        if (e1 == null || e2 == null)
+            return false;
+        GraphEdge<E> edge = new GraphEdge<>(new Vertex<>(e1), new Vertex<>(e2));
         return edges.contains(edge) || edges.contains(edge.reverse());
+    }
+
+    private Vertex<E> searchVertex(E item) {
+        for (Vertex<E> v : vertices) {
+            if (v.equals(new Vertex<>(item)))
+                return v;
+        }
+        return null;
     }
 
     /**
@@ -164,7 +171,7 @@ public class Graph<E> extends AbstractCommonGraphs implements RepresentableGraph
 
         @Override
         public String toString() {
-            return "(" + degree + ")" + item.toString();
+            return "(" + degree + ") " + item.toString();
         }
 
         @Override

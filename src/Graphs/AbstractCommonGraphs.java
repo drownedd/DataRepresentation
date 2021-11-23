@@ -1,6 +1,8 @@
 package Graphs;
 
-public abstract class AbstractCommonGraphs {
+public abstract class AbstractCommonGraphs<E> {
+
+    public abstract boolean addVertex(E item);
 
     public abstract String getVerticesString();
 

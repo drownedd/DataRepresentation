@@ -8,4 +8,16 @@ public class ArrayPrints {
             System.out.println();
         }
     }
+
+    public static void printArray(int[][] arr) {
+        for (int[] ints : arr) {
+            for (int j = 0; j < arr[0].length; j++) {
+                switch (ints[j]) {
+                    case 0, 1 -> System.out.print(" " + ints[j] + " ");
+                    case -1 -> System.out.print(ints[j] + " ");
+                }
+            }
+            System.out.println();
+        }
+    }
 }
